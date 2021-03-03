@@ -1,0 +1,136 @@
+include: "../config.py"
+
+conda:  "../graph_conda.yaml"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 
+#
+#
+#
+#
+#
+# EXPNAME="genomes"
+#
+# DIR=OUTDIR+"/"+EXPNAME
+# GENOMES_FILE=GENOMESDIR+"/"+EXPNAME+".fasta"
+#
+# rule all:
+#     input:
+#         DIR+'/not_mapping_'+EXPNAME+'.tsv',
+#         DIR+'/bowtie_summary.txt'
+#
+#
+# rule kallisto_index:
+#     input:
+#         ref=GENOMES_FILE
+#     output:
+#         DIR+'/kallisto_index_{K}.idx'
+#     threads: 1
+#     shell:
+#         "{KALLISTO} index -k {wildcards.k} -i {output} {input.ref}"
+#
+# rule kallisto_k:
+#     input:
+#         index=DIR+"/kallisto_index_{K}.idx",
+#         r1=INDIR+"/{sample}"+SUFFIX1,
+#         r2=INDIR+"/{sample}"+SUFFIX2
+#     output:
+#         outh5=DIR+"/{sample}_kallisto_{K}_out/abundance.h5",
+#         outsam=DIR+"/{sample}_kallisto_{K}_out_pseudoal.sam",
+#         stats=DIR+"/{sample}_kallisto_{K}_out/stats.txt"
+#     params:
+#         dir=DIR+"/{sample}_kallisto_{K}_out",
+#     log:
+#         DIR+"/{sample}_kallisto_{K}_out/kallisto.log"
+#     threads: 8
+#     shell:
+#         '{KALLISTO} quant -i {input.index} -o {params.dir} -b 100 --pseudobam --threads={threads} '
+#         '{index.r1} {index.r2} '
+#         '>{output.outsam}  2>>{log}; '
+#         '{KALLISTO} h5dump -o {params.dir} {output.outh5}'
+#
+# rule samtools_k:
+#     input:
+#         DIR+"/{sample}_kallisto_{K}_out_pseudoal.sam"
+#     output:
+#         out=DIR+"/{sample}_kallisto_{K}_out/pseudoal_sorted.bam",
+#     params:
+#         outdir=DIR+"/{sample}_kallisto_{K}_out"
+#     shell:
+#         'mv {input} {params.outdir}/pseudoal.sam; '
+#         'samtools view -b {params.outdir}/pseudoal.sam > {params.outdir}/pseudoal.bam  && '
+#         'samtools sort -@ 2 {params.outdir}/pseudoal.bam -o {params.out} && samtools index {params.out} && {params.outdir}/pseudoal.bam ) '
+
+# rule summarize_kallisto:
+#     input:
+#         expand(DIR+"/{sample}_kallisto_{K}_out/stats.txt", sample=SAMPLES, K = KLIST)
+#     output:
+#         outfile=DIR+'/not_mapping_{EXPNAME}.tsv',
+#         outfile2=DIR+'/not_mapping_{EXPNAME}.tex'
+#     params:
+#         dir = DIR + "/{sample}_kallisto_{K}_out",
+#         pref = DIR + "/not_mapping_{assembly}_{K}"
+#     shell:
+#         "python2 why_not_mapping.py {params.dir} {params.pref} {wildcards.K} "
+#
+#
+# rule bowtie_index:
+#     input: GENOMES_FILE
+#     output:
+#         index=DIR+'/bowtie2_index'
+#     log:
+#         DIR+'/bowtie2_sensitive.log'
+#     threads: 8
+#     shell:
+#         BOWTIEDIR + '/bowtie2-build --threads {threads}'+ GENOMES_FILE +'{output.index} 2>> {log} >> {log}'
+#
+# rule bowtie:
+#     input:
+#         index=DIR+"/bowtie_index.idx",
+#         r1=INDIR+"/{sample}"+SUFFIX1,
+#         r2=INDIR+"/{sample}"+SUFFIX2
+#     output:
+#         outsam=temp(DIR+"/{sample}_bowtie.sam"),
+#         log=DIR+"/{sample}_bowtie.log"
+#     threads: 8
+#     shell:
+#         BOWTIEDIR + '/bowtie2 --threads {threads} --very-sensitive -N 1'
+#         + ' -x {input.index} -1 {input.r1} -2 {input.r1} ' +
+#         "-S {output.outsam} 2>> {output.log}"
+#
+# rule samtools_bowtie:
+#     input:
+#         DIR+"/{sample}_bowtie.sam"
+#     output:
+#         bam=DIR+"/{sample}_bowtie_sorted.bam",
+#         idx=DIR+"/{sample}_bowtie_sorted.bam.bai"
+#     shell:
+#         'samtools view -b {input} | samtools sort -@ 2 -o {output.bam} && samtools index {output.bam} '
+#
+# rule bowtie_summary:
+#     input:
+#         expand(DIR+"/{sample}_bowtie.log", sample=SAMPLES)
+#     output:
+#         DIR+'/bowtie_summary.txt'
+#     shell:
+#         'echo `date` >> {output};' +
+#         ' python2 ../parse_bowtie_result.py {input} >> {output}; ' +
+#         ' python2 ../mean_mappability_from_bam.py {input} >> {output}'
+#
+#
+#
+# #rule clean:
+# #    shell: 'rm -rf out.* indices/*'

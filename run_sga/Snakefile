@@ -1,0 +1,137 @@
+include: "../config.py"
+
+ext=".preprocessed_qf%d.ec%d.filter.pass" % (QUALFILTER, CORRECTK)
+
+rule all:
+    input:
+        graph=OUTDIR+"/sga/merged.rmdup_%d.asqg" % (OVERLAP),
+        cdups=OUTDIR+"/sga/control.rmdup.dups.fa" ,
+        tdups=OUTDIR+"/sga/treated.rmdup.dups.fa" ,
+        mdups=OUTDIR+"/sga/merged.rmdup.dups.merged.rmdup.asqg"
+
+rule sga_preprocess:
+    input:
+        f1=INDIR+"/{sample}"+SUFFIX1,
+        f2=INDIR+"/{sample}"+SUFFIX2
+    output:
+        "{OUTDIR}/sga/{sample}.preprocessed_qf{QUALFILTER, [0-9]+}.fa"
+    shell:
+        SGADIR+"/sga preprocess --pe-mode=1  -o {output} -m 50 --suffix=:{wildcards.sample} " +
+        "--pe-mode=1 --quality-filter={QUALFILTER} --discard-quality {input}  "
+
+rule sga_correct:
+    input:
+        "{OUTDIR}/sga/{name}.fa"
+    output:
+        "{OUTDIR}/sga/{name}.ec{CORRECTK, [0-9]+}.fa"
+    log:
+        "{OUTDIR}/sga/logging.txt"
+    params:
+        pref="{OUTDIR}/sga/{name}"
+    shell:
+        SGADIR+"/sga index -a ropebwt -t {threads} --prefix={params.pref} --no-reverse {input} && " +
+        SGADIR+"/sga correct -t {threads} -k {wildcards.CORRECTK} --prefix={params.pref} {input} && "
+        #SGADIR+"/sga index -a ropebwt -t  {threads} --prefix={params.pref}.ec {output} "
+	       # mv $PREFIX$SUF.fa $OUTDIR/
+
+rule sga_index:
+    input:
+        "{OUTDIR}/sga/{file}.fa"
+    output:
+        "{OUTDIR}/sga/{file}.bwt",
+        "{OUTDIR}/sga/{file}.rbwt"
+    shell:
+        SGADIR+"/sga index -a ropebwt -t {threads} --prefix={OUTDIR}/sga/{wildcards.file} {input} "
+
+rule sga_filter:
+    input:
+        f="{OUTDIR}/sga/{name}.fa",
+        #bwt="{OUTDIR}/sga/{name}.bwt"
+    output:
+        "{OUTDIR}/sga/{name}.filter.pass.fa"
+    log:
+        "{OUTDIR}/sga/logging.txt"
+    shell:
+        SGADIR+"/sga filter --substring-only --kmer-size={{CORRECTK}} " +
+            "--kmer-threshold=3  -t {threads} {input.f}"
+
+
+########### Merging control and treated, rmdup... ##########
+rule merge_conditions:
+    input:
+        sc=expand("{OUTDIR}/sga/{sample}{suffix}.fa", sample=SAMPLES_CONTROL,
+            OUTDIR={OUTDIR}, suffix={ext}),
+        st=expand("{OUTDIR}/sga/{sample}{suffix}.fa", sample=SAMPLES_TREATED,
+            OUTDIR={OUTDIR}, suffix={ext})
+    output:
+        oc="{OUTDIR}/sga/control.fa",
+        ot="{OUTDIR}/sga/treated.fa"
+    shell:
+        "cat {input.sc} >> {output.oc}; cat {input.st} >> {output.ot}; "
+
+#remove duplicates
+rule rmdup:
+    input:
+        f="{OUTDIR}/sga/{name}.fa",
+        bwt="{OUTDIR}/sga/{name}.bwt",
+    output:
+        "{OUTDIR}/sga/{name}.rmdup.fa",
+        "{OUTDIR}/sga/{name}.rmdup.dups.fa",
+    params:
+        pref="{OUTDIR}/sga/{name}"
+    shell:
+    	#"{SGADIR}/sga index -a ropebwt -t {threads} --prefix={params.pref} {input}"
+        "{SGADIR}/sga rmdup -t {threads} --prefix={params.pref} {input.f} && mv {wildcards.name}.rmdup* {OUTDIR}/sga/"
+
+
+########### Merging treated and control, remove duplicates ##########
+rule merge_all:
+    input:
+        c="{OUTDIR}/sga/control.rmdup.fa",
+        t="{OUTDIR}/sga/treated.rmdup.fa",
+    output:
+        "{OUTDIR}/sga/merged.fa",
+    params:
+        pref="{OUTDIR}/sga/merged"
+
+    shell:
+        "{SGADIR}/sga merge -p {params.pref} -t {threads} {input.c} {input.t} "
+
+
+#### finding which duplicate duplicates which sequence using overlap graph build
+rule condition_duplicated:
+    input:
+        f="{OUTDIR}/sga/merged.rmdup.fa",
+        dups="{OUTDIR}/sga/merged.rmdup.dups.fa",
+    output:
+        "{OUTDIR}/sga/merged.rmdup.dups.merged.rmdup.asqg.gz"
+    shell:
+        "{SGADIR}/sga overlap -m {READLEN} -t {threads} --target-file={input.f} {input.dups} && " +
+        "mv merged.rmdup.dups.merged.rmdup.asqg* {OUTDIR}/sga/" #### bo opcja --prefix nie działa
+
+########## Overlaps ###########
+rule overlap:
+    input:
+        "{OUTDIR}/sga/merged.rmdup.fa"
+    output:
+        "{OUTDIR}/sga/merged.rmdup_{OVERLAP, [0-9]+}.asqg.gz"
+    params:
+        pref="{OUTDIR}/sga/merged.rmdup"
+    shell:
+        "{SGADIR}/sga overlap -m {wildcards.OVERLAP} -t {threads} --prefix={params.pref} {input} && " +
+        "mv {params.pref}.asqg.gz  {output} "   		#### bo opcja --prefix nie działa
+
+rule unzip:
+    input:
+        "{file}.asqg.gz"
+    output:
+        "{file}.asqg"
+    shell:
+        "gunzip -c {input} > {output}"
+
+
+# rule assemble:
+#     input:
+#         "{OUTDIR}/sga/merged{suf}_{OVERLAP}.asqg
+#     shell:
+#         "sga assemble -o $OUTDIR/${PREFIX}$SUF $OUTDIR/${PREFIX}$SUF.asqg.gz"
