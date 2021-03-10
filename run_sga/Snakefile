@@ -5,9 +5,11 @@ ext=".preprocessed_qf%d.ec%d.filter.pass" % (QUALFILTER, CORRECTK)
 rule all:
     input:
         graph=OUTDIR+"/sga/merged.rmdup_%d.asqg" % (OVERLAP),
-        cdups=OUTDIR+"/sga/control.rmdup.dups.fa" ,
-        tdups=OUTDIR+"/sga/treated.rmdup.dups.fa" ,
-        mdups=OUTDIR+"/sga/merged.rmdup.dups.merged.rmdup.asqg"
+        counts=OUTDIR+"/sga/merged.rmdup_%d_counts.tsv" % (OVERLAP)
+        # cdups=OUTDIR+"/sga/control.rmdup.dups.fa" ,
+        # tdups=OUTDIR+"/sga/treated.rmdup.dups.fa" ,
+        # mdups=OUTDIR+"/sga/merged.rmdup.dups.fa",
+        # mdupsg=OUTDIR+"/sga/merged.rmdup.dups.merged.rmdup.asqg"
 
 rule sga_preprocess:
     input:
@@ -135,3 +137,18 @@ rule unzip:
 #         "{OUTDIR}/sga/merged{suf}_{OVERLAP}.asqg
 #     shell:
 #         "sga assemble -o $OUTDIR/${PREFIX}$SUF $OUTDIR/${PREFIX}$SUF.asqg.gz"
+
+
+
+rule counts:
+    input:
+        graph = OUTDIR+"/sga/merged.rmdup_%d.asqg" % (OVERLAP),
+        c = OUTDIR+"/sga/control.rmdup.dups.fa",
+        t = OUTDIR+"/sga/treated.rmdup.dups.fa",
+        m = OUTDIR+"/sga/merged.rmdup.dups.fa",
+        mg = OUTDIR+"/sga/merged.rmdup.dups.merged.rmdup.asqg"
+    output:
+        OUTDIR+"/sga/merged.rmdup_%d_counts.tsv" % (OVERLAP)
+    shell:
+        "python ../graph/clean_graph.py {input.graph} -c {input.c} -t {input.t} -m {input.m} -g {input.mg} -o {output}"
+    
