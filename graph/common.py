@@ -10,9 +10,6 @@ NODE_SEP = '|'
 JOINED_NODE_SEP = '~'
 
 
-conditions = {k: 1 for k in SAMPLES_TREATED} + {k:0 for k in SAMPLES_CONTROL}
-
-
 def give_time():
     return time.asctime(time.localtime(time.time()))
 

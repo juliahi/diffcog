@@ -3,7 +3,20 @@
 This repository contains code to build differential contigs with String graph
 using two sets of samples containing NGS reads.
 They need to be specified in *config.py* file
-by specifying input and output directory, two sets of sample names and input files' suffixes for paired-end reads. It also 
+by specifying input and output directory, two sets of sample names and input files' suffixes for paired-end reads. This file also contains other options such as number of simplification iterations or minimal contig length.
+
+## Requirements
+* snakemake
+* conda
+///* sga (String Graph Assembler: [url:https://github.com/jts/sga/blob/master/README.md])
+
+TODO
+
+## Installation:
+* conda config --add channels bioconda
+* conda install sga seqkit ...
+
+TODO
 
 ## Build graph using SGA -- run_sga
 

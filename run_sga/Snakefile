@@ -1,5 +1,8 @@
 include: "../config.py"
 
+conda:  "../sga_conda.yaml"
+
+
 ext=".preprocessed_qf%d.ec%d.filter.pass" % (QUALFILTER, CORRECTK)
 
 rule all:
@@ -11,28 +14,51 @@ rule all:
         # mdups=OUTDIR+"/sga/merged.rmdup.dups.fa",
         # mdupsg=OUTDIR+"/sga/merged.rmdup.dups.merged.rmdup.asqg"
 
+
+rule reverse_r2:
+    input:
+        INDIR+"/{sample}"+SUFFIX2
+    output:
+        temp(INDIR+"/{sample}_reversed"+SUFFIX2)
+    shell:
+        "seqkit seq -r -p {input} -o {output}"
+
+
 rule sga_preprocess:
     input:
         f1=INDIR+"/{sample}"+SUFFIX1,
-        f2=INDIR+"/{sample}"+SUFFIX2
+        f2=INDIR+"/{sample}_reversed"+SUFFIX2
     output:
-        "{OUTDIR}/sga/{sample}.preprocessed_qf{QUALFILTER, [0-9]+}.fa"
+        fa="{OUTDIR}/sga/{sample}.preprocessed_qf{QUALFILTER, [0-9]+}.fa",
+        idx=temp("{OUTDIR}/sga/{sample}.preprocessed_qf{QUALFILTER, [0-9]+}.bwt"),
+        sai=temp("{OUTDIR}/sga/{sample}.preprocessed_qf{QUALFILTER, [0-9]+}.sai")
+    params:
+        pref="{OUTDIR}/sga/{sample}.preprocessed_qf{QUALFILTER, [0-9]+}"
+    log:
+        "{OUTDIR}/sga/{sample}_logging.txt"
     shell:
-        SGADIR+"/sga preprocess --pe-mode=1  -o {output} -m 50 --suffix=:{wildcards.sample} " +
-        "--pe-mode=1 --quality-filter={QUALFILTER} --discard-quality {input}  "
+        SGADIR+"sga preprocess --pe-mode=1  -o {output.fa} -m 50 --suffix=:{wildcards.sample} " +
+        "--pe-mode=1 --quality-filter={wildcards.QUALFILTER} --discard-quality {input.f1} {input.f2} >> {log} 2>> {log} && " + 
+        SGADIR+"sga index -a ropebwt -t {threads} --prefix={params.pref} --no-reverse {output.fa}"
+
+ruleorder: sga_preprocess > sga_index
+
 
 rule sga_correct:
     input:
-        "{OUTDIR}/sga/{name}.fa"
+        fa="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.fa",
+        idx="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.bwt",
+        sai="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.sai",
     output:
-        "{OUTDIR}/sga/{name}.ec{CORRECTK, [0-9]+}.fa"
+        fa="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.ec{CORRECTK, [0-9]+}.fa",
     log:
-        "{OUTDIR}/sga/logging.txt"
+        "{OUTDIR}/sga/{name}_logging.txt"
     params:
-        pref="{OUTDIR}/sga/{name}"
+        pref="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}",
+        prefo="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.ec{CORRECTK, [0-9]+}.fa"
     shell:
-        SGADIR+"/sga index -a ropebwt -t {threads} --prefix={params.pref} --no-reverse {input} && " +
-        SGADIR+"/sga correct -t {threads} -k {wildcards.CORRECTK} --prefix={params.pref} {input} && "
+        SGADIR+"sga correct -t {threads} -k {wildcards.CORRECTK} --prefix={params.pref} -o {output.fa} {input.fa} " + 
+        " >> {log} 2>> {log}  "
         #SGADIR+"/sga index -a ropebwt -t  {threads} --prefix={params.pref}.ec {output} "
 	       # mv $PREFIX$SUF.fa $OUTDIR/
 
@@ -40,22 +66,27 @@ rule sga_index:
     input:
         "{OUTDIR}/sga/{file}.fa"
     output:
-        "{OUTDIR}/sga/{file}.bwt",
-        "{OUTDIR}/sga/{file}.rbwt"
+        temp("{OUTDIR}/sga/{file}.bwt"),
+        temp("{OUTDIR}/sga/{file}.rbwt"),
+        temp("{OUTDIR}/sga/{file}.sai"),
+        temp("{OUTDIR}/sga/{file}.rsai")
+    log:
+        "{OUTDIR}/sga/{file}_logging.txt"
     shell:
-        SGADIR+"/sga index -a ropebwt -t {threads} --prefix={OUTDIR}/sga/{wildcards.file} {input} "
+        SGADIR+"sga index -a ropebwt -t {threads} --prefix={OUTDIR}/sga/{wildcards.file} {input} >> {log} 2>> {log}"
 
 rule sga_filter:
     input:
         f="{OUTDIR}/sga/{name}.fa",
-        #bwt="{OUTDIR}/sga/{name}.bwt"
+        bwt=temp("{OUTDIR}/sga/{name}.bwt"),
+        sai=temp("{OUTDIR}/sga/{name}.sai"),
     output:
         "{OUTDIR}/sga/{name}.filter.pass.fa"
     log:
-        "{OUTDIR}/sga/logging.txt"
+        "{OUTDIR}/sga/{name}_logging.txt"
     shell:
-        SGADIR+"/sga filter --substring-only --kmer-size={{CORRECTK}} " +
-            "--kmer-threshold=3  -t {threads} {input.f}"
+        SGADIR+"sga filter --substring-only --kmer-size={CORRECTK} " +
+            "--kmer-threshold=3  -t {threads} {input.f} >> {log} 2>> {log}"
 
 
 ########### Merging control and treated, rmdup... ##########
@@ -76,6 +107,8 @@ rule rmdup:
     input:
         f="{OUTDIR}/sga/{name}.fa",
         bwt="{OUTDIR}/sga/{name}.bwt",
+        rbwt="{OUTDIR}/sga/{name}.rbwt",
+        rsai="{OUTDIR}/sga/{name}.rsai"
     output:
         "{OUTDIR}/sga/{name}.rmdup.fa",
         "{OUTDIR}/sga/{name}.rmdup.dups.fa",
@@ -83,7 +116,7 @@ rule rmdup:
         pref="{OUTDIR}/sga/{name}"
     shell:
     	#"{SGADIR}/sga index -a ropebwt -t {threads} --prefix={params.pref} {input}"
-        "{SGADIR}/sga rmdup -t {threads} --prefix={params.pref} {input.f} && mv {wildcards.name}.rmdup* {OUTDIR}/sga/"
+        "{SGADIR}sga rmdup -t {threads} --prefix={params.pref} {input.f} " #&& mv {wildcards.name}.rmdup* {OUTDIR}/sga/"
 
 
 ########### Merging treated and control, remove duplicates ##########
@@ -97,7 +130,7 @@ rule merge_all:
         pref="{OUTDIR}/sga/merged"
 
     shell:
-        "{SGADIR}/sga merge -p {params.pref} -t {threads} {input.c} {input.t} "
+        "{SGADIR}sga merge -p {params.pref} -t {threads} {input.c} {input.t} "
 
 
 #### finding which duplicate duplicates which sequence using overlap graph build
@@ -108,19 +141,25 @@ rule condition_duplicated:
     output:
         "{OUTDIR}/sga/merged.rmdup.dups.merged.rmdup.asqg.gz"
     shell:
-        "{SGADIR}/sga overlap -m {READLEN} -t {threads} --target-file={input.f} {input.dups} && " +
+        "{SGADIR}sga overlap -m {READLEN} -t {threads} --target-file={input.f} {input.dups} && " +
         "mv merged.rmdup.dups.merged.rmdup.asqg* {OUTDIR}/sga/" #### bo opcja --prefix nie działa
 
 ########## Overlaps ###########
 rule overlap:
     input:
-        "{OUTDIR}/sga/merged.rmdup.fa"
+        fa="{OUTDIR}/sga/merged.rmdup.fa",
+        bwt="{OUTDIR}/sga/merged.rmdup.bwt",
+        rbwt="{OUTDIR}/sga/merged.rmdup.rbwt",
+        sai="{OUTDIR}/sga/merged.rmdup.sai",
+        rsai="{OUTDIR}/sga/merged.rmdup.rsai"
     output:
         "{OUTDIR}/sga/merged.rmdup_{OVERLAP, [0-9]+}.asqg.gz"
     params:
-        pref="{OUTDIR}/sga/merged.rmdup"
+        pref="merged.rmdup"
+    log:
+        "{OUTDIR}/sga/merged.rmdup_logging.txt"
     shell:
-        "{SGADIR}/sga overlap -m {wildcards.OVERLAP} -t {threads} --prefix={params.pref} {input} && " +
+        "{SGADIR}sga overlap -m {wildcards.OVERLAP} -t {threads} {input.fa} >> {log} 2>> {log} && " + 
         "mv {params.pref}.asqg.gz  {output} "   		#### bo opcja --prefix nie działa
 
 rule unzip:
@@ -150,5 +189,6 @@ rule counts:
     output:
         OUTDIR+"/sga/merged.rmdup_%d_counts.tsv" % (OVERLAP)
     shell:
-        "python ../graph/clean_graph.py {input.graph} -c {input.c} -t {input.t} -m {input.m} -g {input.mg} -o {output}"
+        "python2 ../counts_from_sga.py {input.graph} -c {input.c} -t {input.t} -m {input.m} -g {input.mg} -o {output}"
+        #"python2 -m ..graph.counts_from_sga {input.graph} -c {input.c} -t {input.t} -m {input.m} -g {input.mg} -o {output}"
     

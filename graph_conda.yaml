@@ -2,4 +2,4 @@ name: graph
 channels:
   - bioconda
 dependencies:
-  - 
+  - networkx
