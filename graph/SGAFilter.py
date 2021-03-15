@@ -184,8 +184,8 @@ class SgaGraph:
                 for v in self.graph.successors(u):
                     if v not in used:
                         data = self.graph.edges[u, v]
-                        s = str(data["start1"]) + ' ' + str(data["end1"]) + ' ' + str(self.graph.node[u]["length"]) + ' '
-                        s += str(0) + ' ' + str(data["end2"]) + ' ' + str(self.graph.node[v]["length"]) + " 0 0"
+                        s = str(data["start1"]) + ' ' + str(data["end1"]) + ' ' + str(self.graph.nodes[u]["length"]) + ' '
+                        s += str(0) + ' ' + str(data["end2"]) + ' ' + str(self.graph.nodes[v]["length"]) + " 0 0"
                         if rename:
                             output.write("ED\t%s %s %s\n" % (new_names[u], new_names[v], s))
                         else:
@@ -195,8 +195,8 @@ class SgaGraph:
                 for v in self.graph.predecessors(u):
                     if v not in used:
                         data = self.graph.edges[v, u]
-                        s = str(0) + ' ' + str(data["end2"]) + ' ' + str(self.graph.node[u]["length"]) + ' '
-                        s += str(data["start1"]) + ' ' + str(data["end1"]) + ' ' + str(self.graph.node[v]["length"])
+                        s = str(0) + ' ' + str(data["end2"]) + ' ' + str(self.graph.nodes[u]["length"]) + ' '
+                        s += str(data["start1"]) + ' ' + str(data["end1"]) + ' ' + str(self.graph.nodes[v]["length"])
                         s += " 0 0"
                         if rename:
                             output.write("ED\t%s %s %s\n" % (new_names[u], new_names[v], s))
@@ -313,10 +313,10 @@ class SgaGraph:
 
     def get_node(self, node_id):
         try:
-            return self.graph.node[node_id]
+            return self.graph.nodes[node_id]
         except KeyError:
             try:
-                return self.graph.node[self.duplicates_dict[node_id]]
+                return self.graph.nodes[self.duplicates_dict[node_id]]
             except KeyError:
                 return None  # node removed because had no connected nodes
 
@@ -328,8 +328,8 @@ class SgaGraph:
             self.duplicates_dict[part] = node_id
         self.counts[node_id] = nreads
         self.graph.add_node(node_id, length=len(seq))
-        # assert self.graph.node[node_id]["length"] is not None, \
-        #    str(self.graph.node[node_id]) + 'node_id + ' ' + seq + len(seq)'
+        # assert self.graph.nodes[node_id]["length"] is not None, \
+        #    str(self.graph.nodes[node_id]) + 'node_id + ' ' + seq + len(seq)'
 
     def add_edge(self, values):   # returns 1 if edge was a duplicated edge
         if self.graph.has_edge(values[0], values[1]):
@@ -624,7 +624,7 @@ class SgaGraph:
                 edge_d = self.graph.get_edge_data(v1, path[0])
                 edges_to_add.append((v1, new_name, edge_d))
 
-        last_dict = self.graph.node[path[-1]]
+        last_dict = self.graph.nodes[path[-1]]
         length += last_dict["length"]
         return (new_name, {'length': length}), edges_to_add
 
@@ -634,7 +634,7 @@ class SgaGraph:
         
         for node, deg in self.graph.degree():
             print(deg)
-            if deg == 0 and self.graph.node[node]["length"] < minlength:
+            if deg == 0 and self.graph.nodes[node]["length"] < minlength:
                 node_list.append(node)
         if verbose:
             print("Removing %d short-island-nodes" % len(node_list))
@@ -707,14 +707,14 @@ class SgaGraph:
                     seqs[read2][:edge[3]+1] + ' ' + seqs[read1][edge[0]:]
             assert seq is not None, node + '\t' + reads[0]
             if node in self.graph.nodes:
-                assert len(seq) == self.graph.node[node]["length"], "%d %d" % (len(seq), self.graph.node[node]["length"])
+                assert len(seq) == self.graph.nodes[node]["length"], "%d %d" % (len(seq), self.graph.nodes[node]["length"])
             sequences.append(seq)
         return sequences
 
     def save_simple_nodes(self, minlength, out_file, graph_file=None, remove=False):
         node_list = []
         for node, deg in self.graph.degree():
-            if deg == 0 and self.graph.node[node]["length"] >= minlength:
+            if deg == 0 and self.graph.nodes[node]["length"] >= minlength:
                 node_list.append(node)
                 # if len(node_list) % 10000 == 0:
                 #     print len(node_list)
@@ -740,10 +740,10 @@ def filter_islands(sg, min_len, min_fc, verbose=False):
     for node, deg in sg.graph.degree():
         if deg == 0:
             node_list.append(node)
-            sum_len += sg.graph.node[node]["length"]
+            sum_len += sg.graph.nodes[node]["length"]
     fc_count = len([1 for node in node_list
                     if foldchange_compare(sg.counts[node][0], sg.counts[node][1], min_fc) and
-                    sg.graph.node[node]["length"] > min_len])
+                    sg.graph.nodes[node]["length"] > min_len])
 
     if verbose:
         print("Remove %d islands of length %d, %d with |foldchange| >= %f and length >= %d" % \
