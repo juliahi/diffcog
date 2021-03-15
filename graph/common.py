@@ -10,8 +10,8 @@ NODE_SEP = '|'
 JOINED_NODE_SEP = '~'
 
 
-def give_time():
-    return time.asctime(time.localtime(time.time()))
+# def give_time():
+#     return time.asctime(time.localtime(time.time()))
 
 
 def compl(s):
@@ -118,5 +118,5 @@ def jaccard_index(set1, set2):
     idx = 1. * wspolne / len(set1.union(set2))
     #print "Set1\set2=", len(set1) - wspolne, '\t', "Set1 n Set2=", wspolne, '\t', "Set2\set1=", len(set2) - wspolne
     #print "%n\t%d\t%d\t%f" % (len(set1) - wspolne, wspolne, len(set2) - wspolne, idx)
-    print '{:0,d}\t{:0,d}\t{:0,d}\t{:0,.4f}'.format(len(set1) - wspolne, wspolne, len(set2) - wspolne, idx)
+    print('{:0,d}\t{:0,d}\t{:0,d}\t{:0,.4f}'.format(len(set1) - wspolne, wspolne, len(set2) - wspolne, idx))
     return idx

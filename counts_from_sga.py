@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+#from __future__ import absolute_import
 
 from graph import SGAFilter
 import sys
@@ -9,17 +9,17 @@ from config import *
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("graph", type = file, #type = argparse.FileType('r'), 
+parser.add_argument("graph", #type = file, #type = argparse.FileType('r'), 
                     help="input graph asqg in asqg format")
-parser.add_argument("-c", "--control_counts", type = file, 
+parser.add_argument("control_counts", #type = file, 
                     help="counts from control samples")
-parser.add_argument("-t", "--treated_counts", type = file, 
+parser.add_argument("treated_counts", #type = file, 
                     help="counts from treated samples")
-parser.add_argument("-m", "--merged_counts", type = file, 
+parser.add_argument("merged_counts", #type = file, 
                     help="counts from merging conditions")
-parser.add_argument("-g", "--merged_graph", type = file, 
+parser.add_argument("merged_graph", #type = file, 
                     help="input graph of merged conditions in asqg format")
-parser.add_argument("-o", "--output", type = str, 
+parser.add_argument("output", type = str, 
                     help="output file to save counts") 
 
 parser.add_argument("-v", "--verbose", action="store_true",

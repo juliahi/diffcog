@@ -17,9 +17,12 @@ rule simplify:
     output:
         graph = OUTDIR+"/simplified_%d.asqg" % (OVERLAP),
         c = OUTDIR+"/simplified_%d_counts.tsv" % (OVERLAP),
+    log:
+        OUTDIR+"/simplify_logging.txt"
     shell:
-        "python clean_graph.py {input.graph} -c {input.c} -o {output}"
-    
+        "python clean_graph.py {input.graph} {input.c} {output.graph} {output.c} " + 
+        "-v -r {DEADENDS_REMOVE_ROUNDS} -d {DEADENDS_MIN_LENGTH} -m {MIN_LENGTH} >> {log}"
+
 
 
 

@@ -1,18 +1,18 @@
 # graph analysis for SGAFilter graph
 
 import numpy as np
-import pandas
+#import pandas
 import networkx as nx
 # import SGAFilter
 from common import *
 
 
 def short_summary(sg):
-    print "Number of nodes", sg.number_of_nodes()
-    print "Number of edges", sg.number_of_edges()
-    print "Number of reads", sg.number_of_reads()
+    print("Number of nodes", sg.number_of_nodes())
+    print("Number of edges", sg.number_of_edges())
+    print("Number of reads", sg.number_of_reads())
     if sg.sums is not None:
-        print "Number of reads (not normalized)", sg.number_of_reads_not_normed()
+        print("Number of reads (not normalized)", sg.number_of_reads_not_normed())
 
 
 def simple_cycles(sg):
@@ -29,16 +29,16 @@ def analyze_counts(sg):
     count_sums = [sum(v) for v in counts]
     n_reads = sum(count_sums)
 
-    print "largest read counts:", sorted(count_sums)[-10:]
-    print "Condition 0: %d, condition1: %d, all: %d" % (
-        sum([x[0] for x in counts]), sum([x[1] for x in counts]), n_reads)
+    print("largest read counts:", sorted(count_sums)[-10:])
+    print("Condition 0: %d, condition1: %d, all: %d" % (
+        sum([x[0] for x in counts]), sum([x[1] for x in counts]), n_reads))
     # print 'duplicates', n_reads - n_nodes
 
-    print "% read counts > 50:", len([1 for x in count_sums if x > 50]) * 1.0 / n_nodes
+    print("% read counts > 50:", len([1 for x in count_sums if x > 50]) * 1.0 / n_nodes)
 
     countsnon0 = [n[0]+n[1] for n in counts if n[0] > 0 and n[1] > 0]
-    print "nodes with coverage on both strands:%d, %f, having %f of reads" \
-          % (len(countsnon0), 1.*len(countsnon0) / n_nodes, 1.*sum(countsnon0) / n_reads)
+    print("nodes with coverage on both strands:%d, %f, having %f of reads" \
+          % (len(countsnon0), 1.*len(countsnon0) / n_nodes, 1.*sum(countsnon0) / n_reads))
 
     return count_sums
 
@@ -46,8 +46,8 @@ def analyze_counts(sg):
 def analyze_count_pairs(sg):
     pairs = sg.node_nreads()
     single_read_nodes = pairs.count([1, 0]) + pairs.count([0, 1])
-    print "Number of single read nodes: %d, fraction of nodes: %f" % \
-          (single_read_nodes, single_read_nodes*1.0/len(pairs))
+    print("Number of single read nodes: %d, fraction of nodes: %f" % \
+          (single_read_nodes, single_read_nodes*1.0/len(pairs)))
     df = pandas.DataFrame({'c0': [min(10, v[0]) for v in pairs],
                            'c1': [min(10, v[1]) for v in pairs],
                            })
@@ -63,18 +63,18 @@ def analyze_degrees(sg):
     num_dibranch = len([1 for x in pairs if x[0] > 1 and x[1] > 1])
     num_simple = len([1 for x in pairs if x[0] == 1 or x[1] == 1])
 
-    print "\nVertices: %d\tEdges: %d \tIslands: %d \tTips: %d \tMonobranch: %d \tDibranch: %d \tSimple: %d" % \
+    print("\nVertices: %d\tEdges: %d \tIslands: %d \tTips: %d \tMonobranch: %d \tDibranch: %d \tSimple: %d" % \
           (n_nodes, sum(sumdegrees0)/2, n_nodes-len(sumdegrees0), sumdegrees0.count(1),
-           num_monobranch, num_dibranch, num_simple)
-    print "Node degrees:"
-    print '% zeros:', 1. * (n_nodes - len(sumdegrees0)) / n_nodes
-    print '% ones:', 1. * sumdegrees0.count(1) / n_nodes
-    print '% twos:', 1. * sumdegrees0.count(2) / n_nodes
-    print 'maximal values:', sorted(sumdegrees0)[-10:]
-    print '% large values (>= 10):', 1. * (len([1 for x in sumdegrees0 if x >= 10])) / n_nodes
-    print 'mean value:', np.mean(sumdegrees)
-    print 'median value:', np.median(sumdegrees)
-    print ''
+           num_monobranch, num_dibranch, num_simple))
+    print("Node degrees:")
+    print('% zeros:', 1. * (n_nodes - len(sumdegrees0)) / n_nodes)
+    print('% ones:', 1. * sumdegrees0.count(1) / n_nodes)
+    print('% twos:', 1. * sumdegrees0.count(2) / n_nodes)
+    print('maximal values:', sorted(sumdegrees0)[-10:])
+    print('% large values (>= 10):', 1. * (len([1 for x in sumdegrees0 if x >= 10])) / n_nodes)
+    print('mean value:', np.mean(sumdegrees))
+    print('median value:', np.median(sumdegrees))
+    print('')
     return sumdegrees
 
 
@@ -86,16 +86,16 @@ def connected_components(sg):
 def analyze_connected_components(sg):
     no, sizes = connected_components(sg)
     n_nodes = sg.number_of_nodes()
-    print "Number of components:", no, "for nodes:", n_nodes
+    print("Number of components:", no, "for nodes:", n_nodes)
     c1, c2 = sizes.count(1), sizes.count(2)
-    print "Single-node components: %d, fraction of components: %f, fraction of nodes: %f" \
-          % (c1, 1. * c1 / no, c1 * 1. / n_nodes)
-    print "Two-node components: %d, fraction of components: %f, fraction of nodes: %f" \
-          % (c2, 1. * c2 / no, c2 * 2. / n_nodes)
+    print("Single-node components: %d, fraction of components: %f, fraction of nodes: %f" \
+          % (c1, 1. * c1 / no, c1 * 1. / n_nodes))
+    print("Two-node components: %d, fraction of components: %f, fraction of nodes: %f" \
+          % (c2, 1. * c2 / no, c2 * 2. / n_nodes))
     larges = [x for x in sizes if x >= 100]
-    print "Large components (>=100 nodes): %d, fraction of components: %f, fraction of nodes: %f" \
-          % (len(larges), 1. * len(larges) / no, sum(larges) * 1. / n_nodes)
-    print ''
+    print("Large components (>=100 nodes): %d, fraction of components: %f, fraction of nodes: %f" \
+          % (len(larges), 1. * len(larges) / no, sum(larges) * 1. / n_nodes))
+    print('')
 
     return sizes
 
@@ -109,10 +109,10 @@ def analyze_foldchanges(sg):
 
 def analyze_lengths(sg):
     lengths = sg.get_lengths()
-    print '% large lengths (>= 200):', 1. * (len([1 for x in lengths if x >= 200])) / len(lengths)
-    print "min \t 0.05\t 0.25 \t median \t mean \t 0.75 \t 0.95 \t max"
-    print np.min(lengths), np.quantile(lengths, 0.05), np.quantile(lengths, 0.25), np.median(lengths), \
-        np.mean(lengths), np.quantile(lengths, 0.75), np.quantile(lengths, 0.95), np.max(lengths), "\n"
+    print('% large lengths (>= 200):', 1. * (len([1 for x in lengths if x >= 200])) / len(lengths))
+    print("min \t 0.05\t 0.25 \t median \t mean \t 0.75 \t 0.95 \t max")
+    print(np.min(lengths), np.quantile(lengths, 0.05), np.quantile(lengths, 0.25), np.median(lengths), \
+        np.mean(lengths), np.quantile(lengths, 0.75), np.quantile(lengths, 0.95), np.max(lengths), "\n")
     return lengths
 
 

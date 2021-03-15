@@ -189,6 +189,6 @@ rule counts:
     output:
         OUTDIR+"/sga/merged.rmdup_%d_counts.tsv" % (OVERLAP)
     shell:
-        "python2 ../counts_from_sga.py {input.graph} -c {input.c} -t {input.t} -m {input.m} -g {input.mg} -o {output}"
+        "python2 ../counts_from_sga.py {input.graph} {input.c} {input.t} {input.m} {input.mg} {output} >> /dev/null"
         #"python2 -m ..graph.counts_from_sga {input.graph} -c {input.c} -t {input.t} -m {input.m} -g {input.mg} -o {output}"
     

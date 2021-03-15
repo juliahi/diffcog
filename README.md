@@ -9,12 +9,15 @@ by specifying input and output directory, two sets of sample names and input fil
 * snakemake
 * conda
 ///* sga (String Graph Assembler: [url:https://github.com/jts/sga/blob/master/README.md])
+* Python packages in conda: networkx, numpy
+
 
 TODO
 
 ## Installation:
 * conda config --add channels bioconda
-* conda install sga seqkit ...
+* conda install python=2.7
+* conda install sga seqkit networkx numpy ...
 
 TODO
 

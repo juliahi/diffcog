@@ -1,7 +1,6 @@
 name: graph
 channels:
   - bioconda
-python: 2.8
 dependencies:
-  - networkx=2.4
-  - numpy 
+  - seqkit
+  - sga
