@@ -33,9 +33,9 @@ conditions.update({k:0 for k in SAMPLES_CONTROL})
 
 
 if __name__ == "__main__":
-    # for f in [args.graph, args.control_counts, args.treated_counts, args.merged_graph, args.graph]:
-    #     if not os.path.exists(f):
-    #         raise FileNotFoundError("File %s not found"%f)
+    for f in [args.graph, args.control_counts, args.treated_counts, args.merged_graph, args.graph]:
+        if not os.path.exists(f):
+            raise FileNotFoundError("File %s not found"%f)
     try:
         with open(args.output, 'w') as x:
             pass

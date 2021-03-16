@@ -106,7 +106,7 @@ def variance(l):
 
 def dispersion(l):
     if numpy.mean(l) == 0:
-        return 0     # TODO: if all values are 0 there is no dispersion... is it right?
+        return 0     # if all values are 0 there is no dispersion
     return variance(l) / numpy.mean(l)
 
 

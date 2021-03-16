@@ -1,9 +1,9 @@
-# Heuristic algorithm to build differential contigs from Overlap/String graph build for two sets of samples from RNA-seq experiments.
+# DIFFCOG
+-  Heuristic algorithm to build *DIFFerential Contigs from Overlap (string) Graph* build for two sets of samples from RNA-seq experiments.
 
 This repository contains code to build differential contigs with String graph
-using two sets of samples containing NGS reads.
-They need to be specified in *config.py* file
-by specifying input and output directory, two sets of sample names and input files' suffixes for paired-end reads. This file also contains other options such as number of simplification iterations or minimal contig length.
+using two sets of samples containing NGS paired-end RNA-seq reads.
+
 
 ## Requirements
 * snakemake
@@ -12,17 +12,19 @@ by specifying input and output directory, two sets of sample names and input fil
 * Other software in conda: sga (String Graph Assembler: [url:https://github.com/jts/sga/blob/master/README.md]), seqkit
 
 
-
-TODO
-
 ## Installation:
 * conda config --add channels bioconda
-* conda install python=2.7
-* conda install sga seqkit networkx numpy ...
+* conda install sga seqkit networkx numpy 
 
-TODO
+## Running:
+Specify sets of reads in *config.py* file by specifying:
+- two sets of sample names and input files' suffixes for paired-end reads
+- input and output directory
+- optional: other parameters such as number of simplification iterations or minimal contig length.
 
-## Build graph using SGA -- run_sga
+*./run_all.sh* runs workflow: builds graph, simplifies and runs heuristics with Snakemake. For parts of workflow see next sections.
+
+## Build graph using SGA -- directory run_sga
 
 Use *SGA* to build String graph in specific way to be able to retrieve
 read counts from each condition. It assumes reads are the same length (i.e. untrimmed).
@@ -31,13 +33,13 @@ This also prepares counts for each condition for each node in graph.
 
 Although it is possible to run heuristics on graph in ASQG format provided from other source we do not recommend that.
 
-## Simplify graph -- graph
+## Simplify graph -- directory graph
 
 Simplify graph for RNA-seq (assuming strand-specific) and save simplified graph for further analysis. This needs graph in ASQG format and table with counts in tsv, which is prepared in run_sga/counts_from_sga.py, but can be provided from other source.
 
 To run simplification step run *snakemake simplify* in graph directory.
 
-## Run heuristics
+## Run heuristics -- directory graph
 
 Available heuristic methods to construct contigs from simplified string graph with specified fold-change threshold FC:
 * longest - greedily extend path by adding longest vertex

@@ -62,7 +62,6 @@ def take_longest_minfc(graph, min_fc):
     heapq.heapify(heap)
     while len(heap) > 0:
         length, nodename = heapq.heappop(heap)
-        # print length, nodename, nodename in used
         if nodename in used:
             continue
 
@@ -117,7 +116,6 @@ def take_best_fc(graph, min_fc):
     heapq.heapify(heap)
     while len(heap) > 0:
         lfc, nodename = heapq.heappop(heap)
-        # print -lfc, nodename, nodename in used, graph.counts[nodename]
         if nodename in used:
             continue
 

@@ -9,10 +9,6 @@ rule all:
     input:
         graph=OUTDIR+"/sga/merged.rmdup_%d.asqg" % (OVERLAP),
         counts=OUTDIR+"/sga/merged.rmdup_%d_counts.tsv" % (OVERLAP)
-        # cdups=OUTDIR+"/sga/control.rmdup.dups.fa" ,
-        # tdups=OUTDIR+"/sga/treated.rmdup.dups.fa" ,
-        # mdups=OUTDIR+"/sga/merged.rmdup.dups.fa",
-        # mdupsg=OUTDIR+"/sga/merged.rmdup.dups.merged.rmdup.asqg"
 
 
 rule reverse_r2:
@@ -63,8 +59,6 @@ rule sga_correct:
     shell:
         SGADIR+"sga correct -t {threads} -k {wildcards.CORRECTK} --prefix={params.pref} -o {output.fa} {input.fa} " + 
         " >> {log} 2>> {log}  "
-        #SGADIR+"/sga index -a ropebwt -t  {threads} --prefix={params.pref}.ec {output} "
-	       # mv $PREFIX$SUF.fa $OUTDIR/
 
 rule sga_index:
     input:
@@ -135,7 +129,6 @@ rule rmdup:
     threads:
         4
     shell:
-    	#"{SGADIR}/sga index -a ropebwt -t {threads} --prefix={params.pref} {input}"
         "{SGADIR}sga rmdup -t {threads} --prefix={params.pref} {input.f} >> {log} 2>> {log} && " +
          " mv {wildcards.name}.rmdup* {OUTDIR}/sga/"
 
@@ -224,5 +217,4 @@ rule counts:
         OUTDIR+"/sga/merged.rmdup_%d_counts.tsv" % (OVERLAP)
     shell:
         "python2 ../counts_from_sga.py {input.graph} {input.c} {input.t} {input.m} {input.mg} {output} "
-        #"python2 -m ..graph.counts_from_sga {input.graph} -c {input.c} -t {input.t} -m {input.m} -g {input.mg} -o {output}"
     

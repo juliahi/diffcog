@@ -254,12 +254,10 @@ class SgaGraph:
                     new_g.add_edge(name, new_names[v])
                     new_g[name][new_names[v]].update(data)
 
-        # if output_tsv is not None:
-        #     with open(output_tsv, 'w+') as outfile:
-        #         for old_name, new_name in new_names.items():
-        #             outfile.write("%s\t%s\n"%(new_name, old_name))
-
-        # new_nodes = {} # TODO sprawdzic czy nie trzeba tego zrobic!
+        if output_tsv is not None:
+            with open(output_tsv, 'w+') as outfile:
+                for old_name, new_name in new_names.items():
+                    outfile.write("%s\t%s\n"%(new_name, old_name))
 
         self.counts = new_count
         self.graph = new_g
@@ -305,9 +303,6 @@ class SgaGraph:
     def whatcond(self, node_id):
         cond = node_id.split(':')[-1]
         if cond[-2] == '/': cond = cond[:-2]
-        # TODO: kontrola bledu?
-        #if cond not in self.conds: ######### TODO usunac to wybieranie!
-        #    return self.conds.keys()[0]
         return self.conds[cond]
 
     def get_node(self, node_id):
@@ -431,8 +426,6 @@ class SgaGraph:
 
     def finish_loading_counts(self):
         self.duplicates_dict = None
-        #print("Read counts", self.number_of_reads_cond())
-        #TODO: czy to dobrze?
         self.nodes = None
 
     # def reset_counts(self):
@@ -499,7 +492,6 @@ class SgaGraph:
         self.graph.remove_edges_from(edges)
 
     def remove_tips(self):
-        # TODO remove tips that are first in pair?
         to_remove = []
         for node, neighbours in self.graph.adjacency():
             tmp_remove = []
@@ -550,8 +542,6 @@ class SgaGraph:
         return to_remove.keys()
 
     def compress_simple_paths(self, verbose=False):
-        # print("Edges before compression:", self.number_of_edges())
-
         paths = []
         used = {}
         for node in self.graph:
@@ -585,8 +575,6 @@ class SgaGraph:
         for path in paths:
             if self.graph.has_node(path[-1]):
                 new_nodes, new_edges = self._compress_path(path)
-
-                # print(=("Adding %d nodes" % len(new_nodes)))
                 self.graph.add_nodes_from([new_nodes])
                 self.graph.add_edges_from(new_edges)
                 self.remove_nodes(path)

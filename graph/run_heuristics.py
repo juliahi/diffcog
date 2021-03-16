@@ -1,12 +1,7 @@
 
 import heuristics
-#from common_parameters import *
-#from compare_assemblies import load_sga_scaffold
-#import os
 import SGAFilter
-#import sys
 import argparse
-#from datetime import datetime
 
 from graph_stats import get_path_sequences, get_path_count, get_path_coverage
 from common import *
