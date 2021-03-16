@@ -5,18 +5,21 @@ conda:  "../graph_conda.yaml"
 
 rule all:
     input:
-        OUTDIR+"/simplified_%d.asqg" % (OVERLAP),
-        OUTDIR+"/simplified_%d_counts.tsv" % (OVERLAP)
-
+        OUTDIR+"/simplified_%d_%drounds.asqg" % (OVERLAP, DEADENDS_REMOVE_ROUNDS),
+        OUTDIR+"/simplified_%d_%drounds_counts.tsv" % (OVERLAP, DEADENDS_REMOVE_ROUNDS),
+        
+        expand(OUTDIR+'/{heuristic}.fa', heuristic=HEURISTICS),
+        expand(OUTDIR+'/{heuristic}_counts.tsv', heuristic=HEURISTICS)
 
 
 rule simplify:
     input:
         graph = OUTDIR+"/sga/merged.rmdup_%d.asqg" % (OVERLAP),
         c = OUTDIR+"/sga/merged.rmdup_%d_counts.tsv" % (OVERLAP),
+        fa = OUTDIR+"/sga/merged.rmdup.fa"
     output:
-        graph = OUTDIR+"/simplified_%d.asqg" % (OVERLAP),
-        c = OUTDIR+"/simplified_%d_counts.tsv" % (OVERLAP),
+        graph = OUTDIR+"/simplified_%d_%drounds.asqg" % (OVERLAP, DEADENDS_REMOVE_ROUNDS),
+        c = OUTDIR+"/simplified_%d_%drounds_counts.tsv" % (OVERLAP, DEADENDS_REMOVE_ROUNDS),
     log:
         OUTDIR+"/simplify_logging.txt"
     shell:
@@ -24,23 +27,14 @@ rule simplify:
         "-v -r {DEADENDS_REMOVE_ROUNDS} -d {DEADENDS_MIN_LENGTH} -m {MIN_LENGTH} >> {log}"
 
 
-
-
-rule longest:
+rule heuristics:
     input:
-        graph = OUTDIR+"/simplified_%d.asqg" % (OVERLAP),
-        c = OUTDIR+"/simplified_%d_counts.tsv" % (OVERLAP)
+        graph = OUTDIR+"/simplified_%d_%drounds.asqg" % (OVERLAP, DEADENDS_REMOVE_ROUNDS),
+        c = OUTDIR+"/simplified_%d_%drounds_counts.tsv" % (OVERLAP, DEADENDS_REMOVE_ROUNDS),
     output:
-          OUTDIR+"/longest.fa"  
+        expand(OUTDIR+'/{heuristic}.fa', heuristic=HEURISTICS),
+        expand(OUTDIR+'/{heuristic}_counts.tsv', heuristic=HEURISTICS)
+    log:
+        OUTDIR+"/heuristics_logging.txt"
     shell:
-        "run_heuristics.py  {input.graph} -c {input.c} -o {output} -t longest"
-
-# rule longestfc:
-#     input:
-#         graph = OUTDIR+"/simplified_%d.asqg" % (OVERLAP),
-#         c = OUTDIR+"/simplified_%d_counts.tsv" % (OVERLAP)
-
-# rule bestfc:
-#     input:
-#         graph = OUTDIR+"/simplified_%d.asqg" % (OVERLAP),
-#         c = OUTDIR+"/simplified_%d_counts.tsv" % (OVERLAP)
+        "python run_heuristics.py  {input.graph} {input.c} -v -o {OUTDIR} -r {HEURISTICS} -fc {MIN_FC} -l {MIN_CONTIG_LENGTH} >> {log}"

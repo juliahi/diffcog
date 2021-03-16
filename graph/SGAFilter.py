@@ -55,7 +55,7 @@ class SgaGraph:
                 node_id = line.split()[1]
                 self.nodes[node_id] = (0, 0)
             if verbose:
-                print('no. nodes in graph:\t', len(self.nodes))
+                print('no. nodes in graph:\t %d' % len(self.nodes))
             while line:  # Edges
                 edge = read_edge(line)
                 if edge is not None:
@@ -69,7 +69,7 @@ class SgaGraph:
                 line = f.readline()
 
             if verbose:
-                print('no. edges in graph:\t', (noedges0 + noedges1))
+                print('no. edges in graph:\t %d' % (noedges0 + noedges1))
 
         prevnodes = len(self.nodes)
         # original number of nodes in graph (with "lonely" disconnected nodes)
@@ -163,6 +163,7 @@ class SgaGraph:
                 new_names = {}      # new_names[old_name] = new_name
             if contigs is not None:
                 contigsfile = open(contigs, 'w+')
+            
             for nodename, seq in zip(nodes, self.get_nodes_sequence(nodes)):
                 if rename:
                     new_names[nodename] = 'contigs-%d' % count
@@ -175,10 +176,9 @@ class SgaGraph:
                         contigsfile.write(">%s\n%s\n" % (new_names[nodename], seq))
                     else:
                         contigsfile.write(">%s\n%s\n" % (nodename.replace(NODE_SEP, JOINED_NODE_SEP), seq))
-
+            
             if contigs is not None:
                 contigsfile.close()
-
             used = {}
             for u in nodes:
                 for v in self.graph.successors(u):
@@ -204,12 +204,11 @@ class SgaGraph:
                             output.write("ED\t%s %s %s\n" % (u.replace(NODE_SEP, JOINED_NODE_SEP),
                                                              v.replace(NODE_SEP, JOINED_NODE_SEP), s))
                 used[u] = True
-
             if rename:
                 new_names = dict([(v, k) for k, v in new_names.items()])
 
                 # rename in graph permanently?
-                self.rename_nodes_permanently(new_names, output_tsv=rename)
+                self.rename_nodes_permanently(new_names)
                 self.filename = filename
 
     def save_counts(self, filename):
@@ -255,10 +254,10 @@ class SgaGraph:
                     new_g.add_edge(name, new_names[v])
                     new_g[name][new_names[v]].update(data)
 
-        if output_tsv is not None:
-            with open(output_tsv, 'w+') as outfile:
-                for old_name, new_name in new_names.items():
-                    outfile.write("%s\t%s\n"%(new_name, old_name))
+        # if output_tsv is not None:
+        #     with open(output_tsv, 'w+') as outfile:
+        #         for old_name, new_name in new_names.items():
+        #             outfile.write("%s\t%s\n"%(new_name, old_name))
 
         # new_nodes = {} # TODO sprawdzic czy nie trzeba tego zrobic!
 
@@ -559,13 +558,13 @@ class SgaGraph:
             if node not in used and self.graph.out_degree(node) == 1:
                 used_tmp = {} 
                 while node not in used_tmp and self.graph.in_degree(node) == 1 \
-                        and len(self.graph.succ[self.graph.pred[node].keys()[0]]) == 1:
+                        and len(self.graph.succ[list(self.graph.pred[node].keys())[0]]) == 1:
                     used_tmp[node] = True
-                    node = self.graph.pred[node].keys()[0]
+                    node = list(self.graph.pred[node].keys())[0]
 
                 # build path
                 path = [node]
-                tmp_node = self.graph.succ[node].keys()[0]
+                tmp_node = list(self.graph.succ[node].keys())[0]
 
                 used[node] = True
 
@@ -630,10 +629,7 @@ class SgaGraph:
 
     def remove_short_islands(self, minlength, verbose=False):
         node_list = []
-        print(type(self.graph.degree()))
-        
         for node, deg in self.graph.degree():
-            print(deg)
             if deg == 0 and self.graph.nodes[node]["length"] < minlength:
                 node_list.append(node)
         if verbose:
@@ -663,8 +659,7 @@ class SgaGraph:
     def get_nodes_sequence(self, nodes, graph_file=None):
         seqs = {}
         edges = {}
-
-        nodes = map(lambda x: x.replace(PATH_SEP, NODE_SEP), nodes)
+        nodes = list(map(lambda x: x.replace(PATH_SEP, NODE_SEP), nodes))
 
         for node in nodes:
             for read in node.split(NODE_SEP):
@@ -695,7 +690,7 @@ class SgaGraph:
             #print('no. edges loaded:', len(edges))
 
         sequences = []
-        for node in nodes:
+        for node in nodes:            
             reads = node.split(NODE_SEP)
             seq = seqs[reads[0]]
             for read1, read2 in cons_pairs(reads):

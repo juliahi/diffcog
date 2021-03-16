@@ -33,13 +33,13 @@ def compl(s):
 
 
 def cons_pairs(input_list):
-    for i in xrange(len(input_list)-1):
+    for i in range(len(input_list)-1):
         yield (input_list[i], input_list[i+1])
 
 
 def index_pairs(n):
-    for j in xrange(1, n):
-        for i in xrange(j):
+    for j in range(1, n):
+        for i in range(j):
             yield (i, j)
 
 # def foldchange(n1, n2):

@@ -29,7 +29,7 @@ def check_positive(value):
 
 parser.add_argument("-v", "--verbose", action="store_true",
                     help="increase output verbosity")
-parser.add_argument("-r", "--DEADENDS_REMOVE_ROUNDS", type=int, default=10, choices=range(0, 10),
+parser.add_argument("-r", "--DEADENDS_REMOVE_ROUNDS", type=int, default=10, choices=range(1, 11),
                     help="number of iterations of deadends removal")
 parser.add_argument("-d", "--DEADENDS_MIN_LENGTH", type=check_positive, default="100",
                     help="length of dead-end to remove")
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         if not os.path.exists(f):
             raise FileNotFoundError("file %s not found" % f)
 
-    print_log("Loading graph:%s with parameters:\n DEADENDS_REMOVE_ROUNDS = %d, DEADENDS_MIN_LENGTH = %d, \n \
+    print_log("Loading graph:%s \n with parameters: DEADENDS_REMOVE_ROUNDS = %d, DEADENDS_MIN_LENGTH = %d, \
          MINIMAL CONTIG LENGHT = %d" % (args.graph, args.DEADENDS_REMOVE_ROUNDS, args.DEADENDS_MIN_LENGTH, args.MIN_LENGTH))
 
     try: 
@@ -82,9 +82,9 @@ if __name__ == "__main__":
         sys.stdout.flush()
     
     # REMOVE DEAD-ENDS and simplify
-    for i in xrange(args.DEADENDS_REMOVE_ROUNDS):
+    for i in range(1, args.DEADENDS_REMOVE_ROUNDS+1):
         sg.remove_deadends_by_length(args.DEADENDS_MIN_LENGTH, verbose=args.verbose)
-        
+
         print_log("Finished dead-ends round %d" % i)
 
         if args.verbose:
@@ -100,7 +100,7 @@ if __name__ == "__main__":
         sys.stdout.flush()
     
     ### save graph in ASQG
-    sg.write_to_asqg(args.output_graph, contigs=None, rename=True, verbose=args.verbose)
+    sg.write_to_asqg(args.output_graph, contigs=None, rename=True)
     sg.save_counts(args.output_counts)
 
     print_log("Finished saving graph")

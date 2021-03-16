@@ -40,7 +40,7 @@ if __name__ == "__main__":
         with open(args.output, 'w') as x:
             pass
     except Exception:
-        exit("Cannot create file %s" % args.o)
+        exit("Cannot create file %s" % args.output)
 
     
     if args.verbose:

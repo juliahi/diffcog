@@ -1,11 +1,10 @@
 #!/bin/bash
 
-PATHS_TO_RUN=("." #"run_sga"
- "graph")
+PATHS_TO_RUN=("run_sga" "graph")
 
 NUMBER_OF_CORES=2
 
-ARGUMENTS="-p -j ${NUMBER_OF_CORES} --use-conda --debug-dag" #"--rulegraph"
+ARGUMENTS="-p -j ${NUMBER_OF_CORES} --use-conda " # --debug-dag" #"--rulegraph"
 #--report report.html"
 
 ########################################################################

@@ -8,8 +8,9 @@ by specifying input and output directory, two sets of sample names and input fil
 ## Requirements
 * snakemake
 * conda
-///* sga (String Graph Assembler: [url:https://github.com/jts/sga/blob/master/README.md])
 * Python packages in conda: networkx, numpy
+* Other software in conda: sga (String Graph Assembler: [url:https://github.com/jts/sga/blob/master/README.md]), seqkit
+
 
 
 TODO
@@ -28,9 +29,13 @@ read counts from each condition. It assumes reads are the same length (i.e. untr
 
 This also prepares counts for each condition for each node in graph.
 
+Although it is possible to run heuristics on graph in ASQG format provided from other source we do not recommend that.
+
 ## Simplify graph -- graph
 
 Simplify graph for RNA-seq (assuming strand-specific) and save simplified graph for further analysis. This needs graph in ASQG format and table with counts in tsv, which is prepared in run_sga/counts_from_sga.py, but can be provided from other source.
+
+To run simplification step run *snakemake simplify* in graph directory.
 
 ## Run heuristics
 
@@ -39,4 +44,5 @@ Available heuristic methods to construct contigs from simplified string graph wi
 * longestfc - greedily add longest vertex while foldchange is larger than FC (or smaller than 1/FC)
 * bestfc - greedily extend path by vertex keeping the furthest fold-change from FC
 
-
+To run heuristics specified in *config.py* file run *snakemake heuristics* in graph directory.
+Reads are normalized for each condition by sum(condition)/10^6.
