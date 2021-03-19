@@ -1,9 +1,10 @@
+import os
 
 # sample prefixes:
 #SAMPLES_CONTROL = ['6685_04-06-2015', '6690_04-06-2015', '6695_04-06-2015', '6704_04-06-2015']
 #SAMPLES_TREATED = ['6683_16-06-2015', '6685_16-06-2015', '6690_16-06-2015', '6695_16-06-2015', '6704_16-06-2015']
-SAMPLES_CONTROL = ['6685_04-06-2015', '6690_04-06-2015', ]
-SAMPLES_TREATED = ['6683_16-06-2015', '6685_16-06-2015', '6690_16-06-2015']
+SAMPLES_CONTROL = ['C2', 'C3', ]
+SAMPLES_TREATED = ['T1', 'T2', 'T3']
 
 # sample suffix for paired reads
 #SUFFIX1 = "_depl_1.fq.gz"
@@ -11,11 +12,8 @@ SAMPLES_TREATED = ['6683_16-06-2015', '6685_16-06-2015', '6690_16-06-2015']
 SUFFIX1 = "_1.fq"
 SUFFIX2 = "_2.fq"
 
-#OUTDIR="/mnt/chr7/data/julia"
-#INDIR="/mnt/chr4/mikrobiomy-2/Wyniki_sekwencjonowania/demultiplexed"
-#INDIR="/home/julia/chr4/mikrobiomy-2/Wyniki_sekwencjonowania/demultiplexed"
-INDIR="/home/julia/studia/test_data"
-OUTDIR="/home/julia/studia/heurystyki_test"
+INDIR=os.path.dirname(os.path.abspath(__file__))) + "/test_data"
+OUTDIR="~/heurystyki_test"
 
 SGADIR=""
 
