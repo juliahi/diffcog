@@ -1,6 +1,6 @@
 include: "../config.py"
 
-conda:  "../graph_conda.yaml"
+conda:  "graph_conda.yaml"
 
 
 rule all:

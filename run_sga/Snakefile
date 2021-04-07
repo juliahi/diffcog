@@ -1,6 +1,6 @@
 include: "../config.py"
 
-conda:  "../sga_conda.yaml"
+conda:  "sga_conda.yaml"
 
 
 ext=".preprocessed_qf%d.ec%d.filter.pass" % (QUALFILTER, CORRECTK)
@@ -31,7 +31,7 @@ rule sga_preprocess:
     params:
         pref="{OUTDIR}/sga/{sample}.preprocessed_qf{QUALFILTER, [0-9]+}"
     log:
-        "{OUTDIR}/sga/{sample}_logging.txt"
+        "{OUTDIR}/sga/{sample}.preprocessed_qf{QUALFILTER, [0-9]+}_logging.txt"
     threads:
         4
     shell:
@@ -44,21 +44,21 @@ ruleorder: sga_preprocess > sga_index
 
 rule sga_correct:
     input:
-        fa="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.fa",
-        idx=temp("{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.bwt"),
-        sai=temp("{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.sai"),
+        fa="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER}.fa",
+        idx="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER}.bwt",
+        sai="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER}.sai",
     output:
         fa="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.ec{CORRECTK, [0-9]+}.fa",
     log:
-        "{OUTDIR}/sga/{name}_logging.txt"
+        "{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.ec{CORRECTK, [0-9]+}_logging.txt"
     params:
         pref="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}",
         prefo="{OUTDIR}/sga/{name}.preprocessed_qf{QUALFILTER, [0-9]+}.ec{CORRECTK, [0-9]+}.fa"
     threads:
         4
     shell:
-        SGADIR+"sga correct -t {threads} -k {wildcards.CORRECTK} --prefix={params.pref} -o {output.fa} {input.fa} " + 
-        " >> {log} 2>> {log}  "
+        SGADIR+"sga correct -t {threads} -k {CORRECTK} --prefix={params.pref} -o {output.fa} {input.fa} " + 
+        " >> {log} 2>> {log} "
 
 rule sga_index:
     input:
@@ -115,10 +115,10 @@ rule merge_conditions:
 rule rmdup:
     input:
         f="{OUTDIR}/sga/{name}.fa",
-        bwt=temp("{OUTDIR}/sga/{name}.bwt"),
-        rbwt=temp("{OUTDIR}/sga/{name}.rbwt"),
-        sai=temp("{OUTDIR}/sga/{name}.sai"),
-        rsai=temp("{OUTDIR}/sga/{name}.rsai")
+        bwt="{OUTDIR}/sga/{name}.bwt",
+        rbwt="{OUTDIR}/sga/{name}.rbwt",
+        sai="{OUTDIR}/sga/{name}.sai",
+        rsai="{OUTDIR}/sga/{name}.rsai"
     output:
         "{OUTDIR}/sga/{name}.rmdup.fa",
         "{OUTDIR}/sga/{name}.rmdup.dups.fa",
@@ -182,7 +182,7 @@ rule overlap:
     params:
         pref="merged.rmdup"
     log:
-        "{OUTDIR}/sga/merged_logging.txt"
+        "{OUTDIR}/sga/merged.rmdup_{OVERLAP, [0-9]+}_logging.txt"
     threads:
         4
     shell:
@@ -216,5 +216,5 @@ rule counts:
     output:
         OUTDIR+"/sga/merged.rmdup_%d_counts.tsv" % (OVERLAP)
     shell:
-        "python2 ../counts_from_sga.py {input.graph} {input.c} {input.t} {input.m} {input.mg} {output} "
+        "python ../graph/counts_from_sga.py {input.graph} {input.c} {input.t} {input.m} {input.mg} {output} "
     
