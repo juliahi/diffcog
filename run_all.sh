@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PATHS_TO_RUN=("run_sga" "graph")
+PATHS_TO_RUN=("run_sga" "overlap_graph")
 
 NUMBER_OF_CORES=2
 

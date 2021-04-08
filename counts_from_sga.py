@@ -1,6 +1,6 @@
 #from __future__ import absolute_import
 
-from graph import SGAFilter
+from overlap_graph import SGAFilter
 import sys
 import os
 import argparse
@@ -41,8 +41,6 @@ if __name__ == "__main__":
             pass
     except Exception:
         exit("Cannot create file %s" % args.output)
-
-    
     if args.verbose:
         print("Loading graph:", args.graph)
         sys.stdout.flush()

@@ -5,7 +5,7 @@ import argparse
 import os
 from datetime import datetime
 
-from common import *
+#from .common import *
 
 
 parser = argparse.ArgumentParser()

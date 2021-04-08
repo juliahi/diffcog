@@ -1,6 +1,7 @@
-name: graph
+name: sga_conda
 channels:
   - bioconda
 dependencies:
   - seqkit
   - sga
+  - networkx

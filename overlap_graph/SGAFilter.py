@@ -1,6 +1,19 @@
 import math
 import networkx as nx
-from common import *
+#from .common import *
+
+
+epsilon = 0.000001
+
+PATH_SEP = '&'
+NODE_SEP = '|'
+JOINED_NODE_SEP = '~'
+
+
+def cons_pairs(input_list):
+    for i in range(len(input_list)-1):
+        yield (input_list[i], input_list[i+1])
+
 
 
 def read_edge(line):    # from ASQG formatted file

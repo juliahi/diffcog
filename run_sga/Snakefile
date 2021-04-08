@@ -10,7 +10,6 @@ rule all:
         graph=OUTDIR+"/sga/merged.rmdup_%d.asqg" % (OVERLAP),
         counts=OUTDIR+"/sga/merged.rmdup_%d_counts.tsv" % (OVERLAP)
 
-
 rule reverse_r2:
     input:
         INDIR+"/{sample}"+SUFFIX2
@@ -36,7 +35,7 @@ rule sga_preprocess:
         4
     shell:
         SGADIR+"sga preprocess --pe-mode=1  -o {output.fa} -m 50 --suffix=:{wildcards.sample} " +
-        "--pe-mode=1 --quality-filter={wildcards.QUALFILTER} --discard-quality {input.f1} {input.f2} >> {log} 2>> {log} && " + 
+        "--pe-mode=1 --quality-filter={wildcards.QUALFILTER} --discard-quality {input.f1} {input.f2} >> {log} 2>> {log} && " +
         SGADIR+"sga index -a ropebwt -t {threads} --prefix={params.pref} --no-reverse {output.fa} >> {log} 2>> {log}"
 
 ruleorder: sga_preprocess > sga_index
@@ -57,7 +56,7 @@ rule sga_correct:
     threads:
         4
     shell:
-        SGADIR+"sga correct -t {threads} -k {CORRECTK} --prefix={params.pref} -o {output.fa} {input.fa} " + 
+        SGADIR+"sga correct -t {threads} -k {CORRECTK} --prefix={params.pref} -o {output.fa} {input.fa} " +
         " >> {log} 2>> {log} "
 
 rule sga_index:
@@ -186,7 +185,7 @@ rule overlap:
     threads:
         4
     shell:
-        "{SGADIR}sga overlap -m {wildcards.OVERLAP} -t {threads} {input.fa} >> {log} 2>> {log} && " + 
+        "{SGADIR}sga overlap -m {wildcards.OVERLAP} -t {threads} {input.fa} >> {log} 2>> {log} && " +
         "mv {params.pref}.asqg.gz  {output} "   		#### bo opcja --prefix nie działa
 
 rule unzip:
@@ -208,13 +207,14 @@ rule unzip:
 
 rule counts:
     input:
-        graph = OUTDIR+"/sga/merged.rmdup_%d.asqg" % (OVERLAP),
+        graph = OUTDIR+"/sga/merged.rmdup_{OVERLAP}.asqg",
         c = OUTDIR+"/sga/control.rmdup.dups.fa",
         t = OUTDIR+"/sga/treated.rmdup.dups.fa",
         m = OUTDIR+"/sga/merged.rmdup.dups.fa",
         mg = OUTDIR+"/sga/merged.rmdup.dups.merged.rmdup.asqg"
     output:
-        OUTDIR+"/sga/merged.rmdup_%d_counts.tsv" % (OVERLAP)
+        OUTDIR+"/sga/merged.rmdup_{OVERLAP}_counts.tsv"
+    log:
+        OUTDIR+"/sga/merged.rmdup_{OVERLAP}_counts_logging.txt"
     shell:
-        "python ../graph/counts_from_sga.py {input.graph} {input.c} {input.t} {input.m} {input.mg} {output} "
-    
+        "python ../counts_from_sga.py {input.graph} {input.c} {input.t} {input.m} {input.mg} {output} >> {log} 2> {log}"
