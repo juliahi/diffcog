@@ -1,7 +1,9 @@
-name: sga_conda
+name: diffcog
 channels:
   - bioconda
 dependencies:
   - seqkit
+  - snakemake
   - sga
   - networkx
+  - numpy

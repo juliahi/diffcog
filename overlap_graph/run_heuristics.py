@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import heuristics
 import SGAFilter
@@ -110,7 +111,8 @@ def filter_by_seqlen(paths, seqs, min_len):
 
 
 if __name__ == "__main__":
-
+    import networkx as nx
+    print(nx.__version__)
     for h in args.heuristics:
         try:
             with open(f"{args.output_dir}/{h}.fa", 'w') as x:

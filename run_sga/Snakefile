@@ -1,7 +1,5 @@
 include: "../config.py"
 
-conda:  "sga_conda.yaml"
-
 
 ext=".preprocessed_qf%d.ec%d.filter.pass" % (QUALFILTER, CORRECTK)
 

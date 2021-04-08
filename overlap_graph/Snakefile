@@ -1,7 +1,5 @@
 include: "../config.py"
 
-conda:  "graph_conda.yaml"
-
 
 rule all:
     input:
@@ -10,7 +8,6 @@ rule all:
         
         expand(OUTDIR+'/{heuristic}.fa', heuristic=HEURISTICS),
         expand(OUTDIR+'/{heuristic}_counts.tsv', heuristic=HEURISTICS)
-
 
 rule simplify:
     input:
