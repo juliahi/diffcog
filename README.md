@@ -9,17 +9,27 @@ using two sets of samples containing NGS paired-end RNA-seq reads.
 * *conda* -- Miniconda, a minimal version of conda can be installed from https://docs.conda.io/en/latest/miniconda.html
 
 ## Installation:
-* Create conda environment -- this will install all required packages:  snakemake, Python packages: networkx, numpy, and other software: sga (String Graph Assembler: https://github.com/jts/sga/blob/master/README.md), seqkit:
+* Clone this repository:
+
+```
+git clone https://github.com/juliahi/diffcog.git
+cd diffcog  
+```
+
+* Create conda environment -- this will install all required packages:  snakemake, Python packages: networkx, numpy, and other software: seqkit and sga (String Graph Assembler: https://github.com/jts/sga/blob/master/README.md)
 
 ```
 conda env create -f diffcog.yml
 ```
 
 * Activate environment:
+
 ```
 conda activate diffcog
 ```
+
 * Run on provided test data specified in *config.py* to check if installation was succesfull:
+
 ```
 ./run_all.sh
 ```
