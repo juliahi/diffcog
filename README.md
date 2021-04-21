@@ -19,7 +19,7 @@ cd diffcog
 * Create conda environment -- this will install all required packages:  snakemake, Python packages: networkx, numpy, and other software: seqkit and sga (String Graph Assembler: https://github.com/jts/sga/blob/master/README.md)
 
 ```
-conda env create -f diffcog.yml
+conda env create -f diffcog.yaml
 ```
 
 * Activate environment:
